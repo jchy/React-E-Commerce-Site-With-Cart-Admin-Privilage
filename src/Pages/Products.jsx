@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "../Components/navbar.module.css";
 import styless from "./pages.module.css";
+import {CartContext} from "../Context/CartContext";
+import { useContext } from "react";
 
 const fetchProducts = () => {
   return axios.get(
@@ -13,6 +15,7 @@ const fetchProducts = () => {
 const Products = () => {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [cartItems, setCartItems] = useContext(CartContext);
 
   const handleFetchProduct = async () => {
     try {
@@ -29,14 +32,19 @@ const Products = () => {
     handleFetchProduct();
   }, []);
 
+  const handleCart = (id) => {
+    setCartItems([...cartItems,id]);
+    console.log(cartItems);
+  }
+
   if (isLoading) {
     return <div>...loading</div>;
   }
   return (
     <div>
-      <p className={styles.welcomeMsg}>
+      <h2 className={styles.welcomeMsg} style={{margin:"30px"}}>
         Purchase our Genuine & Brand new Products
-      </p>
+      </h2>
       <div
         style={{
           display: "flex",
@@ -44,8 +52,9 @@ const Products = () => {
           gap: "1rem",
           flexWrap: "wrap",
           margin: "auto",
-          marginLeft: "15%",
-          marginRight: "10%"
+          justifyContent: "center",
+          marginLeft: "100px",
+          marginRight: "100px"
         }}
       >
         {data?.map((item) => {
@@ -69,18 +78,20 @@ const Products = () => {
                 />
                 <div>
                   <p style={{ color: "white" }}>{item.name}</p>
+                  <div>
+                     <button style={{ border: "1px solid white", width: "90px",height: "24px",marginBottom:"7px", cursor: "pointer",marginTop:"7px",borderRadius:"10px" }} onClick={()=>handleCart(item.id)}>Add to Cart</button>
+                  </div>
                   <Link
                     to={`/products/${item.id}`}
                     className={styles.link}
                     style={{
-                      padding: "10px",
                       fontSize: "16px",
-                      border: "1px solid gray",
-                      color:"white",
-                      borderRadius: "10px"
+                      color:"turquoise",
+                      borderRadius: "10px",
+                      cursor:"pointer"
                     }}
                   >
-                    Show Product Info
+                    Show More Info
                   </Link>
                 </div>
               </div>

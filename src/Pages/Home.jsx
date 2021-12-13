@@ -7,14 +7,14 @@ const Home = () => {
         className={styles.homeBgImg}
         style={{ backgroundImage: `url('/images/iphones.png')` }}
       >
-        <div style={{ textAlign: "right", paddingTop: "200px" }}>
+        <div style={{ textAlign: "right", paddingTop: "340px",paddingRight:"50px" }}>
           <h2>Apple Launch Range</h2>
           <div
             style={{
               display: "flex",
               flexDirection: "row",
               justifyContent: "right",
-              gap: "1rem",
+              gap: "1rem"
             }}
           >
             <div>

@@ -1,129 +1,232 @@
-import styles from "./pages.module.css";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import styles from "../Components/navbar.module.css";
+import styless from "./pages.module.css";
+import { CartContext } from "../Context/CartContext";
+import { useContext } from "react";
+
+const fetchProducts = () => {
+  return axios.get(
+    "https://dynamic-route-server-products.herokuapp.com/products"
+  );
+};
+
+var addedToCartItems = [];
+var totalItems = 0;
+var cartItemDeatil = {};
+var totalCartPrice = 180;
 
 const Cart = () => {
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  var [cartItems, setCartItems] = useContext(CartContext);
+  var [itemFrequency, setItemFrequency] = useState({});
+  var [totalItemState, setTotalItemState] = useState(totalItems);
+
+  const handleFetchProduct = async () => {
+    try {
+      setIsLoading(true);
+      const { data } = await fetchProducts();
+      setData(data);
+      var k = 0;
+      cartItems.sort((a, b) => a - b);
+      totalItems = cartItems.length;
+      setTotalItemState(totalItems);
+      cartItemDeatil = {};
+      // setCartItemDeatil({})
+      for (let val in cartItems) {
+        cartItemDeatil[cartItems[val]] =
+          (cartItemDeatil[cartItems[val]] || 0) + 1;
+        // setCartItemDeatil({...cartItemDeatil, val : ((cartItemDeatil[cartItems[val]] ||0)+1)});
+      }
+      setItemFrequency(cartItemDeatil);
+      console.log(cartItemDeatil);
+
+      cartItems = [...new Set(cartItems)];
+      console.log(cartItems);
+      addedToCartItems = [];
+
+      data.filter((elem, i) => {
+        if (elem.id === cartItems[k]) {
+          addedToCartItems.push(elem);
+          k++;
+        }
+      });
+      console.log(addedToCartItems);
+    } catch (err) {
+      console.log(err);
+    }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    handleFetchProduct().then(() => {
+      addedToCartItems.map((item) => {
+        console.log(item.price, itemFrequency[item.id]);
+        totalCartPrice += item.price * itemFrequency[item.id];
+      });
+      console.log(totalCartPrice);
+    });
+  }, []);
+
+  console.log("frew", itemFrequency);
+
+  const handleItemRemoval = (key, price) => {
+    console.log("fq1", itemFrequency);
+    if (cartItemDeatil[key] > 0) {
+      cartItemDeatil[key] -= 1;
+      totalItems -= 1;
+      if (totalCartPrice === "NaN") {
+        totalCartPrice = (price);
+      }
+      totalCartPrice -= price;
+      console.log(totalCartPrice);
+      setTotalItemState(totalItems);
+    }
+    itemFrequency = cartItemDeatil;
+    setItemFrequency({ ...itemFrequency, ...cartItemDeatil });
+  };
+
+  const handleItemAddition = (key, price) => {
+    console.log("fq2", itemFrequency);
+    cartItemDeatil[key] += 1;
+    totalItems += 1;
+    if (totalCartPrice === "NaN") {
+      totalCartPrice = (price);
+    }
+    totalCartPrice += price;
+    console.log("totp", totalCartPrice);
+    setTotalItemState(totalItems);
+    setItemFrequency({ ...itemFrequency, ...cartItemDeatil });
+  };
+
+  if (isLoading) {
+    return <div>...loading</div>;
+  }
   return (
     <div>
+      <h2 className={styles.welcomeMsg} style={{ margin: "30px" }}>
+        Following are the Items that you addded to cart
+      </h2>
+      {/* <h3>You have added {totalItemState} items to your Cart </h3>
+      <h3>total Cart Price : {totalCartPrice}</h3> */}
+       <div style={{display: 'flex'}}>
       <div
-        className={styles.homeBgImg}
-        style={{ backgroundImage: `url('/images/bg3.png')` }}
+        style={{
+          // display: "flex",
+          // flexDirection: "row",
+          // gap: "1rem",
+          // flexWrap: "wrap",
+          // margin: "auto",
+          // justifyContent: "center"
+          margin:"30px"
+        }}
       >
-        <div style={{ textAlign: "right", paddingTop: "200px" }}>
-          <h2>Buy Brand New Laptops</h2>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "right",
-              gap: "1rem",
-            }}
-          >
-            <div>
-              <button className={styles.homeBtn}>SHOP THE RANGE</button>
-            </div>
-            {/* <div>
-              <button className={styles.homeBtn}>PRESS RELEASE</button>
-            </div> */}
-          </div>
-        </div>
+        {addedToCartItems?.map((item) => {
+          return (
+            <>
+              <div
+                style={{
+                  border: "1px solid gray",
+                  background: "cornsilk",
+                  color: "black",
+                  borderRadius: "10px",
+                  padding: "20px",
+                  display: "flex", 
+                  marginBottom:"30px",
+                  marginLeft:"50px"
+                }}
+              >
+                <div>
+                  <img
+                    src={item.url}
+                    alt=""
+                    width="200px"
+                    height="200px"
+                    style={{ marginTop: "20px" }}
+                  />
+                </div>
+                <div
+                  style={{
+                    marginTop: "50px",
+                    textAlign: "left",
+                    paddingLeft: "20px",
+                    lineHeight: "30px",
+                  }}
+                >
+                  <p>Product Name : {item.name}</p>
+                  <p>
+                    Total number of {item.name} added to the Cart :{" "}
+                    {itemFrequency[item.id]}
+                  </p>
+                  <div style={{ marginTop: "20px", marginBottom: "20px" }}>
+                    <button
+                      style={{
+                        height: "40px",
+                        width: "40px",
+                        borderRadius: "50%",
+                        fontSize: "24px",
+                        cursor: "pointer",
+                        fontWeight: "900",
+                        marginRight: "30px",
+                      }}
+                      onClick={() => handleItemRemoval(item.id, item.price)}
+                    >
+                      ➖
+                    </button>
+                    <button
+                      style={{
+                        height: "40px",
+                        width: "40px",
+                        borderRadius: "50%",
+                        fontSize: "24px",
+                        cursor: "pointer",
+                        fontWeight: "900",
+                      }}
+                      onClick={() => handleItemAddition(item.id, item.price)}
+                    >
+                      ➕
+                    </button>
+                  </div>
+
+                  <Link
+                    to={`/products/${item.id}`}
+                    className={styles.link}
+                    style={{
+                      fontSize: "16px",
+                      color: "blue",
+                      borderRadius: "10px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Show More Info
+                  </Link>
+                </div>
+              </div>
+            </>
+          );
+        })}
+      </div>
+      <div style={{textAlign:"left",height:"100px",marginTop:"50px", paddingTop:"100px", border:"1px solid gray", padding:"30px", background:"cornsilk", borderRadius:"10px"}}>
+        <p>Total Items : {totalItemState} </p>
+        <p>Total Price : {totalCartPrice}</p>
       </div>
 
-      <div>
-        <h3>Created by Proper, for your favourite tech.</h3>
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <div style={{ lineHeight: "5px" }}>
-            <div>
-              <img
-                src="/images/chargeKit.png"
-                alt="img"
-                height="300px"
-                width="300px"
-              />
-            </div>
-            <h4>iPhone 13 MagSafe Charging Kit</h4>
-            <p>$102</p>
-          </div>
-          <div style={{ lineHeight: "5px" }}>
-            <div>
-              <img
-                src="/images/caseKit.png"
-                alt="img"
-                height="300px"
-                width="300px"
-              />
-            </div>
-            <h4>iPhone 13 MagSafe Charging Kit</h4>
-            <p>$102</p>
-          </div>
-          <div style={{ lineHeight: "5px" }}>
-            <div>
-              <img
-                src="/images/properKit.png"
-                alt="img"
-                height="300px"
-                width="300px"
-              />
-            </div>
-            <h4>iPhone 13 MagSafe Charging Kit</h4>
-            <p>$102</p>
-          </div>
-          <div style={{ lineHeight: "5px" }}>
-            <div>
-              <img
-                src="/images/ringKit.png"
-                alt="img"
-                height="300px"
-                width="300px"
-              />
-            </div>
-            <h4>iPhone 13 MagSafe Charging Kit</h4>
-            <p>$102</p>
-          </div>
-        </div>
       </div>
-      <div>
-        <button className={styles.viewBtn}>VIEW THE COLLECTION</button>
-      </div>
-      <div style={{ display: "flex", justifyContent: "center" }}>
-        <div
-          style={{
-            backgroundImage: `url('/images/maCbookAir.jpeg')`,
-            height: "450px",
-            width: "100%",
-            backgroundRepeat: "no-repeat",
-            backgroundSize: "100% 600px",
-            paddingTop: "200px",
-            resize: "both",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: "10rem",
-              color: "white",
-              fontSize: "22px",
-              fontWeight: 700,
-            }}
-          >
-            <div style={{ textAlign: "left" }}>
-              <h4>Shop</h4>
-              <h2>Apple Products</h2>
-              <div>
-                <button className={styles.homeBtn}>VIEW RANGE</button>
-              </div>
-            </div>
-            <div style={{ textAlign: "left" }}>
-              <h4>Shop</h4>
-              <h2>Proper Accessories</h2>
-              <div>
-                <button className={styles.homeBtn}>VIEW RANGE</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div style={{ display: "flex", color: "gray", fontSize: "14px", gap:"2rem", paddingLeft: "50px", paddingRight: "50px"}}>
-        <div style={{textAlign:"left"}}>
+
+      <div
+        style={{
+          display: "flex",
+          color: "gray",
+          fontSize: "14px",
+          gap: "2rem",
+          paddingLeft: "50px",
+          paddingRight: "50px",
+          marginTop: "100px",
+        }}
+      >
+        <div style={{ textAlign: "left" }}>
           <h4>Australia's no.1 destination for tech & design</h4>
           <p>
             Founded on the principal that good design should be seamless and
@@ -133,7 +236,7 @@ const Cart = () => {
           </p>
         </div>
 
-        <div style={{textAlign:"left"}}>
+        <div style={{ textAlign: "left" }}>
           <h4>Studio Proper</h4>
           <p>
             Verified Customer Reviews Apple Authorised Reseller Buy Now Pay
@@ -142,7 +245,7 @@ const Cart = () => {
           </p>
         </div>
 
-        <div style={{textAlign:"left"}}>
+        <div style={{ textAlign: "left" }}>
           <h4>Journal</h4>
           <p>
             All Articles BEST CHRISTMAS GIFT IDEAS FOR TECH LOVERS 2021 DogTag
@@ -153,19 +256,24 @@ const Cart = () => {
           </p>
         </div>
       </div>
-        <div style={{textAlign:"left", marginLeft:"50px"}}>
-          <h4>Newsletter</h4>
-          <p>Subscribe to receive updates, access to exclusive deals, and more.</p>
-          <input type="text" placeholder="Enter your email address" style={{padding:"10px", width:"300px", height:"30px"}}/>
-        </div>
-        <div style={{textAlign:"left", marginLeft:"50px", marginTop:"20px"}}>
-          <button className={styles.homeBtn}>SUBSCRIBE</button>
-        </div>
-        <div>
-          <h4>@STUDIO PROPER</h4>
-        </div>
+      <div style={{ textAlign: "left", marginLeft: "50px" }}>
+        <h4>Newsletter</h4>
+        <p>
+          Subscribe to receive updates, access to exclusive deals, and more.
+        </p>
+        <input
+          type="text"
+          placeholder="Enter your email address"
+          style={{ padding: "10px", width: "300px", height: "30px" }}
+        />
+      </div>
+      <div style={{ textAlign: "left", marginLeft: "50px", marginTop: "20px" }}>
+        <button className={styless.homeBtn}>SUBSCRIBE</button>
+      </div>
+      <div>
+        <h4>@STUDIO PROPER</h4>
+      </div>
     </div>
   );
 };
-
 export default Cart;
