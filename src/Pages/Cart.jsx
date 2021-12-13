@@ -15,7 +15,6 @@ const fetchProducts = () => {
 var addedToCartItems = [];
 var totalItems = 0;
 var cartItemDeatil = {};
-var totalCartPrice = 180;
 
 const Cart = () => {
   const [data, setData] = useState(null);
@@ -23,6 +22,7 @@ const Cart = () => {
   var [cartItems, setCartItems] = useContext(CartContext);
   var [itemFrequency, setItemFrequency] = useState({});
   var [totalItemState, setTotalItemState] = useState(totalItems);
+  var [totalPrice, setTotalPrice] = useState(0);
 
   const handleFetchProduct = async () => {
     try {
@@ -31,6 +31,15 @@ const Cart = () => {
       setData(data);
       var k = 0;
       cartItems.sort((a, b) => a - b);
+      var i = 0;
+      data.map((cartItem) => {
+        while (cartItem.id === cartItems[i]) {
+          totalPrice += cartItem.price;
+          i++;
+        }
+      });
+      setTotalPrice(totalPrice);
+
       totalItems = cartItems.length;
       setTotalItemState(totalItems);
       cartItemDeatil = {};
@@ -61,28 +70,16 @@ const Cart = () => {
   };
 
   useEffect(() => {
-    handleFetchProduct().then(() => {
-      addedToCartItems.map((item) => {
-        console.log(item.price, itemFrequency[item.id]);
-        totalCartPrice += item.price * itemFrequency[item.id];
-      });
-      console.log(totalCartPrice);
-    });
+    handleFetchProduct();
   }, []);
 
-  console.log("frew", itemFrequency);
-
   const handleItemRemoval = (key, price) => {
-    console.log("fq1", itemFrequency);
     if (cartItemDeatil[key] > 0) {
       cartItemDeatil[key] -= 1;
       totalItems -= 1;
-      if (totalCartPrice === "NaN") {
-        totalCartPrice = (price);
-      }
-      totalCartPrice -= price;
-      console.log(totalCartPrice);
+      totalPrice -= price;
       setTotalItemState(totalItems);
+      setTotalPrice(totalPrice);
     }
     itemFrequency = cartItemDeatil;
     setItemFrequency({ ...itemFrequency, ...cartItemDeatil });
@@ -92,12 +89,9 @@ const Cart = () => {
     console.log("fq2", itemFrequency);
     cartItemDeatil[key] += 1;
     totalItems += 1;
-    if (totalCartPrice === "NaN") {
-      totalCartPrice = (price);
-    }
-    totalCartPrice += price;
-    console.log("totp", totalCartPrice);
+    totalPrice += price;
     setTotalItemState(totalItems);
+    setTotalPrice(totalPrice);
     setItemFrequency({ ...itemFrequency, ...cartItemDeatil });
   };
 
@@ -109,110 +103,112 @@ const Cart = () => {
       <h2 className={styles.welcomeMsg} style={{ margin: "30px" }}>
         Following are the Items that you addded to cart
       </h2>
-      {/* <h3>You have added {totalItemState} items to your Cart </h3>
-      <h3>total Cart Price : {totalCartPrice}</h3> */}
-       <div style={{display: 'flex'}}>
-      <div
-        style={{
-          // display: "flex",
-          // flexDirection: "row",
-          // gap: "1rem",
-          // flexWrap: "wrap",
-          // margin: "auto",
-          // justifyContent: "center"
-          margin:"30px"
-        }}
-      >
-        {addedToCartItems?.map((item) => {
-          return (
-            <>
-              <div
-                style={{
-                  border: "1px solid gray",
-                  background: "cornsilk",
-                  color: "black",
-                  borderRadius: "10px",
-                  padding: "20px",
-                  display: "flex", 
-                  marginBottom:"30px",
-                  marginLeft:"50px"
-                }}
-              >
-                <div>
-                  <img
-                    src={item.url}
-                    alt=""
-                    width="200px"
-                    height="200px"
-                    style={{ marginTop: "20px" }}
-                  />
-                </div>
+      <div style={{ display: "flex" }}>
+        <div
+          style={{
+            margin: "30px",
+          }}
+        >
+          {addedToCartItems?.map((item) => {
+            return (
+              <>
                 <div
                   style={{
-                    marginTop: "50px",
-                    textAlign: "left",
-                    paddingLeft: "20px",
-                    lineHeight: "30px",
+                    border: "1px solid gray",
+                    background: "cornsilk",
+                    color: "black",
+                    borderRadius: "10px",
+                    padding: "20px",
+                    display: "flex",
+                    marginBottom: "30px",
+                    marginLeft: "50px",
                   }}
                 >
-                  <p>Product Name : {item.name}</p>
-                  <p>
-                    Total number of {item.name} added to the Cart :{" "}
-                    {itemFrequency[item.id]}
-                  </p>
-                  <div style={{ marginTop: "20px", marginBottom: "20px" }}>
-                    <button
-                      style={{
-                        height: "40px",
-                        width: "40px",
-                        borderRadius: "50%",
-                        fontSize: "24px",
-                        cursor: "pointer",
-                        fontWeight: "900",
-                        marginRight: "30px",
-                      }}
-                      onClick={() => handleItemRemoval(item.id, item.price)}
-                    >
-                      ➖
-                    </button>
-                    <button
-                      style={{
-                        height: "40px",
-                        width: "40px",
-                        borderRadius: "50%",
-                        fontSize: "24px",
-                        cursor: "pointer",
-                        fontWeight: "900",
-                      }}
-                      onClick={() => handleItemAddition(item.id, item.price)}
-                    >
-                      ➕
-                    </button>
+                  <div>
+                    <img
+                      src={item.url}
+                      alt=""
+                      width="200px"
+                      height="200px"
+                      style={{ marginTop: "20px" }}
+                    />
                   </div>
-
-                  <Link
-                    to={`/products/${item.id}`}
-                    className={styles.link}
+                  <div
                     style={{
-                      fontSize: "16px",
-                      color: "blue",
-                      borderRadius: "10px",
-                      cursor: "pointer",
+                      marginTop: "50px",
+                      textAlign: "left",
+                      paddingLeft: "20px",
+                      lineHeight: "30px",
                     }}
                   >
-                    Show More Info
-                  </Link>
-                </div>
-              </div>
-            </>
-          );
-        })}
-      </div>
-      <div style={{textAlign:"left",height:"100px",marginTop:"50px", paddingTop:"100px", border:"1px solid gray", padding:"30px", background:"cornsilk", borderRadius:"10px"}}>
-        <p>Total Items : {totalItemState} </p>
-        <p>Total Price : {totalCartPrice}</p>
-      </div>
+                    <p>Product Name : {item.name}</p>
+                    <p>
+                      Total number of {item.name} added to the Cart :{" "}
+                      {itemFrequency[item.id]}
+                    </p>
+                    <div style={{ marginTop: "20px", marginBottom: "20px" }}>
+                      <button
+                        style={{
+                          height: "40px",
+                          width: "40px",
+                          borderRadius: "50%",
+                          fontSize: "24px",
+                          cursor: "pointer",
+                          fontWeight: "900",
+                          marginRight: "30px",
+                        }}
+                        onClick={() => handleItemRemoval(item.id, item.price)}
+                      >
+                        ➖
+                      </button>
+                      <button
+                        style={{
+                          height: "40px",
+                          width: "40px",
+                          borderRadius: "50%",
+                          fontSize: "24px",
+                          cursor: "pointer",
+                          fontWeight: "900",
+                        }}
+                        onClick={() => handleItemAddition(item.id, item.price)}
+                      >
+                        ➕
+                      </button>
+                    </div>
 
+                    <Link
+                      to={`/products/${item.id}`}
+                      className={styles.link}
+                      style={{
+                        fontSize: "16px",
+                        color: "blue",
+                        borderRadius: "10px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Show More Info
+                    </Link>
+                  </div>
+                </div>
+              </>
+            );
+          })}
+        </div>
+        <div
+          style={{
+            textAlign: "left",
+            height: "100px",
+            marginTop: "50px",
+            paddingTop: "100px",
+            border: "1px solid gray",
+            padding: "30px",
+            background: "cornsilk",
+            borderRadius: "10px",
+          }}
+        >
+          <p>Total Items : {totalItemState} </p>
+          <p>Total Price : {totalPrice}</p>
+        </div>
       </div>
 
       <div
