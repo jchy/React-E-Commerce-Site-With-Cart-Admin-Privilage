@@ -1,5 +1,6 @@
 # Getting Started with Create React App
 ## Netlify-Deployed Link: [https://react-ecommerce-cart-app.netlify.app]
+## Vercel-Deplyment Link : [https://shopify-stores-project.vercel.app/]
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
