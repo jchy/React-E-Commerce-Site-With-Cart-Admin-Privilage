@@ -1,6 +1,9 @@
-# Getting Started with Create React App
+# Following are the different platforms where this app has been deployed Check it out
 ## Netlify-Deployed Link: [https://react-ecommerce-cart-app.netlify.app]
-## Vercel-Deplyment Link : [https://shopify-stores-project.vercel.app/]
+
+## Vercel-Deployment Link : [https://shopify-stores-project.vercel.app/]
+
+## Heroku-Deployment Link : [https://morning-earth-55161.herokuapp.com/]
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
