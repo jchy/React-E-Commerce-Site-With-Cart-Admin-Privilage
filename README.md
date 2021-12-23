@@ -1,4 +1,5 @@
 # Getting Started with Create React App
+## Netlify-Deployed Link: [https://react-ecommerce-cart-app.netlify.app]
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
